@@ -25,6 +25,16 @@ export class EventsController {
     return this.eventsService.findAll(true);
   }
 
+  // Static routes MUST come before parameterized routes
+  @Get('organizer/dashboard')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ORGANIZER')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Organizer dashboard' })
+  getDashboard(@CurrentUser() user: any) {
+    return this.eventsService.getDashboard(user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get event details' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -87,14 +97,5 @@ export class EventsController {
   @ApiOperation({ summary: 'Get ticket types for event' })
   getTicketTypes(@Param('id', ParseUUIDPipe) id: string) {
     return this.eventsService.getTicketTypes(id);
-  }
-
-  @Get('organizer/dashboard')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ORGANIZER')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Organizer dashboard' })
-  getDashboard(@CurrentUser() user: any) {
-    return this.eventsService.getDashboard(user.id);
   }
 }

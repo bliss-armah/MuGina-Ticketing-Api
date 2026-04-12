@@ -1,0 +1,95 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mugina_postgres
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mugina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mugina}
+      POSTGRES_DB: ${POSTGRES_DB:-mugina_ticketing}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mugina} -d ${POSTGRES_DB:-mugina_ticketing}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+
+  redis:
+    image: redis:7-alpine
+    container_name: mugina_redis
+    ports:
+      - "6390:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+
+  api:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: mugina_api_dev
+    ports:
+      - "3050:3050"
+
+    volumes:
+      - .:/app
+      - /app/node_modules   # ✅ IMPORTANT (fixes bcrypt + prisma)
+
+    env_file: .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://mugina:mugina@postgres:5432/mugina_ticketing
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+
+    command: sh -c "yarn prisma:generate && yarn start:dev"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
+  api-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: mugina_api_prod
+    ports:
+      - "3050:3050"
+
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+
+volumes:
+  postgres_data:
+  redis_data:

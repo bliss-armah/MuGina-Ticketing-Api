@@ -5,6 +5,7 @@
   "author": "MuGina",
   "private": true,
   "license": "MIT",
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",

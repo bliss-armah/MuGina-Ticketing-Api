@@ -1,12 +1,14 @@
 import { Injectable, Logger, Inject, NotFoundException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as QRCode from 'qrcode';
+import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
 import { ITicketRepository, TICKET_REPOSITORY } from '../../domain/ticket/repositories/ticket.repository.interface';
 import { IEventRepository, EVENT_REPOSITORY } from '../../domain/event/repositories/event.repository.interface';
 import { TicketCacheService } from '../../infrastructure/cache/ticket-cache.service';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { ValidateTicketDto } from './dto/validate-ticket.dto';
+import { CreateTicketInput, TicketStatus } from '@domain/ticket/entities/ticket.entity';
 
 export interface QRPayload {
   ticketId: string;
@@ -62,11 +64,10 @@ export class TicketsService {
     eventId: string,
     items: Array<{ ticketTypeId: string; quantity: number }>,
   ): Promise<void> {
-    const ticketsToCreate = [];
+    const ticketsToCreate: CreateTicketInput[] = [];
 
     for (const item of items) {
       for (let i = 0; i < item.quantity; i++) {
-        const { v4: uuidv4 } = await import('uuid');
         const ticketId = uuidv4();
         const payload: QRPayload = { ticketId, eventId, issuedAt: Date.now() };
         const qrPayload = this.signQrPayload(payload);
@@ -79,7 +80,7 @@ export class TicketsService {
           holderId: userId,
           qrPayload,
           isUsed: false,
-          status: 'ACTIVE',
+          status: TicketStatus.ACTIVE,
         });
       }
     }

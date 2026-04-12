@@ -1,21 +1,26 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
-import helmet from 'helmet';
-import * as compression from 'compression';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe, Logger } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { ConfigService } from "@nestjs/config";
+import helmet from "helmet";
+import * as compression from "compression";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
+  const logger = new Logger("Bootstrap");
+  // rawBody: true enables req.rawBody for Paystack webhook signature verification
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug'],
+    logger: ["error", "warn", "log", "debug"],
+    rawBody: true,
   });
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT', 3001);
-  const apiPrefix = configService.get<string>('API_PREFIX', 'api/v1');
-  const frontendUrl = configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+  const port = configService.get<number>("PORT", 3050);
+  const apiPrefix = configService.get<string>("API_PREFIX", "api/v1");
+  const frontendUrl = configService.get<string>(
+    "FRONTEND_URL",
+    "http://localhost:3000",
+  );
 
   // Security
   app.use(helmet());
@@ -23,9 +28,9 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: [frontendUrl, "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   });
 
@@ -43,15 +48,15 @@ async function bootstrap() {
   );
 
   // Swagger
-  if (configService.get('NODE_ENV') !== 'production') {
+  if (configService.get("NODE_ENV") !== "production") {
     const config = new DocumentBuilder()
-      .setTitle('MuGina Ticketing API')
-      .setDescription('Event ticketing and QR validation system')
-      .setVersion('1.0')
+      .setTitle("MuGina Ticketing API")
+      .setDescription("Event ticketing and QR validation system")
+      .setVersion("1.0")
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, document);
+    SwaggerModule.setup("docs", app, document);
     logger.log(`Swagger docs available at http://localhost:${port}/docs`);
   }
 

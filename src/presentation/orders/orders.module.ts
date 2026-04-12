@@ -7,8 +7,10 @@ import { EventPrismaRepository } from '../../infrastructure/database/repositorie
 import { EVENT_REPOSITORY } from '../../domain/event/repositories/event.repository.interface';
 import { UserPrismaRepository } from '../../infrastructure/database/repositories/user.prisma.repository';
 import { USER_REPOSITORY } from '../../domain/user/repositories/user.repository.interface';
+import { PaystackModule } from '../../infrastructure/paystack/paystack.module';
 
 @Module({
+  imports: [PaystackModule],
   controllers: [OrdersController],
   providers: [
     OrdersService,

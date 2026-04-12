@@ -3,8 +3,10 @@ import { EventsController } from './events.controller';
 import { EventsService } from '../../application/events/events.service';
 import { EventPrismaRepository } from '../../infrastructure/database/repositories/event.prisma.repository';
 import { EVENT_REPOSITORY } from '../../domain/event/repositories/event.repository.interface';
+import { CloudinaryModule } from '../../infrastructure/cloudinary/cloudinary.module';
 
 @Module({
+  imports: [CloudinaryModule],
   controllers: [EventsController],
   providers: [
     EventsService,

@@ -4,9 +4,10 @@ import { PaymentsService } from '../../application/payments/payments.service';
 import { TicketsModule } from '../tickets/tickets.module';
 import { OrderPrismaRepository } from '../../infrastructure/database/repositories/order.prisma.repository';
 import { ORDER_REPOSITORY } from '../../domain/order/repositories/order.repository.interface';
+import { PaystackModule } from '../../infrastructure/paystack/paystack.module';
 
 @Module({
-  imports: [TicketsModule],
+  imports: [TicketsModule, PaystackModule],
   controllers: [PaymentsController],
   providers: [
     PaymentsService,
