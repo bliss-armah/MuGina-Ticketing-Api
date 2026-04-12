@@ -55,7 +55,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: "6379"
 
-    command: sh -c "yarn prisma:generate && yarn start:dev"
+    command: sh -c "yarn prisma:generate && npx prisma migrate deploy && yarn start:dev"
 
     depends_on:
       postgres:

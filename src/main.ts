@@ -19,7 +19,7 @@ async function bootstrap() {
   const apiPrefix = configService.get<string>("API_PREFIX", "api/v1");
   const frontendUrl = configService.get<string>(
     "FRONTEND_URL",
-    "http://localhost:3000",
+    "http://localhost:3003",
   );
 
   // Security
@@ -28,7 +28,7 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: [frontendUrl, "http://localhost:3000"],
+    origin: [frontendUrl, "http://localhost:3003"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

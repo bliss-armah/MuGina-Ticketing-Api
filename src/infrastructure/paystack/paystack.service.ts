@@ -96,6 +96,11 @@ export class PaystackService {
   verifyWebhookSignature(payload: string, signature: string): boolean {
     const webhookSecret = this.config.get<string>('PAYSTACK_WEBHOOK_SECRET', this.secretKey);
     const hash = crypto.createHmac('sha512', webhookSecret).update(payload).digest('hex');
-    return hash === signature;
+    try {
+      return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(signature, 'hex'));
+    } catch {
+      // timingSafeEqual throws if buffers differ in length (i.e. malformed signature)
+      return false;
+    }
   }
 }
