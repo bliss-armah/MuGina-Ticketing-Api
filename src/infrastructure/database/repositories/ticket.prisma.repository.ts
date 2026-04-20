@@ -26,7 +26,12 @@ export class TicketPrismaRepository implements ITicketRepository {
   async findByEventId(eventId: string): Promise<TicketEntity[]> {
     const tickets = await this.prisma.ticket.findMany({
       where: { eventId },
-      select: { id: true, isUsed: true, status: true, eventId: true, ticketTypeId: true, holderId: true, qrPayload: true, qrImageUrl: true, orderId: true, scannedAt: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true, isUsed: true, status: true, eventId: true,
+        ticketTypeId: true, holderId: true, entryPin: true,
+        qrPayload: true, qrImageUrl: true, orderId: true,
+        scannedAt: true, createdAt: true, updatedAt: true,
+      },
     });
     return tickets.map(this.toEntity.bind(this));
   }
@@ -38,6 +43,13 @@ export class TicketPrismaRepository implements ITicketRepository {
       orderBy: { createdAt: 'desc' },
     });
     return tickets.map(this.toEntity.bind(this));
+  }
+
+  async findByEntryPin(pin: string, eventId: string): Promise<TicketEntity | null> {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { eventId_entryPin: { eventId, entryPin: pin } },
+    });
+    return ticket ? this.toEntity(ticket) : null;
   }
 
   async create(data: Partial<TicketEntity>): Promise<TicketEntity> {

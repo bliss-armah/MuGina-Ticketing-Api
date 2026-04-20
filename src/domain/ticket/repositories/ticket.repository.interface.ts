@@ -5,6 +5,7 @@ export interface ITicketRepository {
   findByOrderId(orderId: string): Promise<TicketEntity[]>;
   findByEventId(eventId: string): Promise<TicketEntity[]>;
   findByHolderId(holderId: string): Promise<TicketEntity[]>;
+  findByEntryPin(pin: string, eventId: string): Promise<TicketEntity | null>;
   create(data: Partial<TicketEntity>): Promise<TicketEntity>;
   createMany(data: Partial<TicketEntity>[]): Promise<void>;
   markAsUsed(ticketId: string, scannedAt: Date): Promise<TicketEntity>;

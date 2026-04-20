@@ -34,6 +34,15 @@ export class OrderPrismaRepository implements IOrderRepository {
     return orders.map(this.toEntity.bind(this));
   }
 
+  async findByGuestPhone(phone: string): Promise<OrderEntity[]> {
+    const orders = await this.prisma.order.findMany({
+      where: { guestPhone: phone },
+      include: { event: true, orderItems: { include: { ticketType: true } }, tickets: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return orders.map(this.toEntity.bind(this));
+  }
+
   async findByPaystackRef(ref: string): Promise<OrderEntity | null> {
     const order = await this.prisma.order.findUnique({
       where: { paystackRef: ref },
@@ -48,11 +57,14 @@ export class OrderPrismaRepository implements IOrderRepository {
   ): Promise<OrderEntity> {
     const order = await this.prisma.order.create({
       data: {
-        userId: data.userId!,
+        userId: data.userId ?? null,
         eventId: data.eventId!,
         totalAmount: data.totalAmount!,
         status: 'PENDING',
         paystackRef: data.paystackRef,
+        guestName: data.guestName ?? null,
+        guestEmail: data.guestEmail ?? null,
+        guestPhone: data.guestPhone ?? null,
         orderItems: {
           create: items.map((item) => ({
             ticketTypeId: item.ticketTypeId,

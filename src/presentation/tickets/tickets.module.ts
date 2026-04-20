@@ -5,8 +5,10 @@ import { TicketPrismaRepository } from '../../infrastructure/database/repositori
 import { TICKET_REPOSITORY } from '../../domain/ticket/repositories/ticket.repository.interface';
 import { EventPrismaRepository } from '../../infrastructure/database/repositories/event.prisma.repository';
 import { EVENT_REPOSITORY } from '../../domain/event/repositories/event.repository.interface';
+import { SmsModule } from '../../infrastructure/sms/sms.module';
 
 @Module({
+  imports: [SmsModule],
   controllers: [TicketsController],
   providers: [
     TicketsService,

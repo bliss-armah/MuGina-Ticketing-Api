@@ -10,7 +10,8 @@ export class TicketEntity {
   orderId: string;
   ticketTypeId: string;
   eventId: string;
-  holderId: string;
+  holderId?: string | null;
+  entryPin?: string | null;
   status: TicketStatus;
   qrPayload: string;
   qrImageUrl?: string;
@@ -29,7 +30,8 @@ export type CreateTicketInput = {
   orderId: string;
   ticketTypeId: string;
   eventId: string;
-  holderId: string;
+  holderId?: string | null;
+  entryPin?: string;
   qrPayload: string;
   isUsed: boolean;
   status: TicketStatus;

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateGuestOrderDto } from './dto/create-guest-order.dto';
 import { IOrderRepository, ORDER_REPOSITORY } from '../../domain/order/repositories/order.repository.interface';
 import { IEventRepository, EVENT_REPOSITORY } from '../../domain/event/repositories/event.repository.interface';
 import { IUserRepository, USER_REPOSITORY } from '../../domain/user/repositories/user.repository.interface';
@@ -56,10 +57,58 @@ export class OrdersService {
       amount: totalAmount,
       reference: paystackRef,
       callbackUrl: dto.callbackUrl,
-      metadata: { orderId: order.id, userId, eventId: dto.eventId },
+      metadata: { app: 'ticketing', orderId: order.id, userId, eventId: dto.eventId },
     });
 
     this.logger.log(`Order created: ${order.id}, ref: ${paystackRef}`);
+
+    return { order, payment: paystackResponse };
+  }
+
+  async createGuestOrder(dto: CreateGuestOrderDto) {
+    const event = await this.eventRepo.findById(dto.eventId);
+    if (!event) throw new NotFoundException('Event not found');
+    if (!event.isPublished) throw new BadRequestException('Event is not available');
+
+    let totalAmount = 0;
+    const resolvedItems: Array<{ ticketTypeId: string; quantity: number; unitPrice: number }> = [];
+
+    for (const item of dto.items) {
+      const ticketType = await this.eventRepo.findTicketTypeById(item.ticketTypeId);
+      if (!ticketType) throw new NotFoundException(`Ticket type ${item.ticketTypeId} not found`);
+      if (ticketType.eventId !== dto.eventId) throw new BadRequestException('Ticket type does not belong to this event');
+      if (!ticketType.hasAvailability(item.quantity)) {
+        throw new BadRequestException(`Not enough tickets available for ${ticketType.name}`);
+      }
+
+      const itemTotal = ticketType.price * item.quantity;
+      totalAmount += itemTotal;
+      resolvedItems.push({ ticketTypeId: item.ticketTypeId, quantity: item.quantity, unitPrice: ticketType.price });
+    }
+
+    const paystackRef = `MUG-${uuidv4().replace(/-/g, '').substring(0, 16).toUpperCase()}`;
+
+    const order = await this.orderRepo.create(
+      {
+        eventId: dto.eventId,
+        totalAmount,
+        paystackRef,
+        guestName: dto.guestName,
+        guestEmail: dto.guestEmail,
+        guestPhone: dto.guestPhone,
+      },
+      resolvedItems,
+    );
+
+    const paystackResponse = await this.paystack.initializeTransaction({
+      email: dto.guestEmail,
+      amount: totalAmount,
+      reference: paystackRef,
+      callbackUrl: dto.callbackUrl,
+      metadata: { app: 'ticketing', orderId: order.id, eventId: dto.eventId, guest: true },
+    });
+
+    this.logger.log(`Guest order created: ${order.id}, ref: ${paystackRef}, phone: ${dto.guestPhone}`);
 
     return { order, payment: paystackResponse };
   }

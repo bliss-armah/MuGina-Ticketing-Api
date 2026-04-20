@@ -7,8 +7,11 @@ export enum OrderStatus {
 
 export class OrderEntity {
   id: string;
-  userId: string;
+  userId?: string | null;
   eventId: string;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
   totalAmount: number;
   status: OrderStatus;
   paystackRef?: string;

@@ -4,6 +4,7 @@ import { RedisService } from './redis.service';
 const TICKET_CACHE_TTL = 86400; // 24 hours
 const TICKET_KEY_PREFIX = 'ticket:';
 const EVENT_TICKETS_KEY_PREFIX = 'event_tickets:';
+const PIN_KEY_PREFIX = 'pin:';
 
 @Injectable()
 export class TicketCacheService {
@@ -13,6 +14,10 @@ export class TicketCacheService {
 
   private ticketKey(ticketId: string): string {
     return `${TICKET_KEY_PREFIX}${ticketId}`;
+  }
+
+  private pinKey(eventId: string, pin: string): string {
+    return `${PIN_KEY_PREFIX}${eventId}:${pin}`;
   }
 
   async cacheTicketStatus(ticketId: string, isUsed: boolean): Promise<void> {
@@ -35,6 +40,14 @@ export class TicketCacheService {
 
   async markTicketUsedInCache(ticketId: string): Promise<void> {
     await this.cacheTicketStatus(ticketId, true);
+  }
+
+  async cachePinToTicket(eventId: string, pin: string, ticketId: string): Promise<void> {
+    await this.redis.set(this.pinKey(eventId, pin), ticketId, TICKET_CACHE_TTL);
+  }
+
+  async getTicketIdByPin(eventId: string, pin: string): Promise<string | null> {
+    return this.redis.get(this.pinKey(eventId, pin));
   }
 
   async cacheEventTickets(eventId: string, tickets: Array<{ id: string; isUsed: boolean }>): Promise<void> {

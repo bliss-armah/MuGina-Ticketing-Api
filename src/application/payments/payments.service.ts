@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { IOrderRepository, ORDER_REPOSITORY } from '../../domain/order/repositories/order.repository.interface';
 import { PaystackService } from '../../infrastructure/paystack/paystack.service';
 import { TicketsService } from '../tickets/tickets.service';
@@ -16,15 +16,13 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async handleWebhook(rawBody: string, signature: string): Promise<void> {
-    const isValid = this.paystack.verifyWebhookSignature(rawBody, signature);
-    if (!isValid) {
-      this.logger.warn('Invalid Paystack webhook signature received');
-      throw new BadRequestException('Invalid webhook signature');
-    }
+  verifySignature(rawBody: string, signature: string): boolean {
+    return this.paystack.verifyWebhookSignature(rawBody, signature);
+  }
 
+  async processWebhookAsync(rawBody: string): Promise<void> {
     const event = JSON.parse(rawBody);
-    this.logger.log(`Paystack webhook received: ${event.event}`);
+    this.logger.log(`Processing Paystack event: ${event.event}`);
 
     if (event.event === 'charge.success') {
       await this.handleChargeSuccess(event.data);
@@ -41,24 +39,21 @@ export class PaymentsService {
     }
 
     if (order.isPaid()) {
-      this.logger.warn(`Order ${order.id} already processed`);
+      this.logger.log(`Order ${order.id} already processed — skipping`);
       return;
     }
 
-    // Verify amount
     const verified = await this.paystack.verifyTransaction(reference);
     if (verified.status !== 'success') {
-      this.logger.warn(`Payment not successful for order ${order.id}`);
+      this.logger.warn(`Payment not confirmed for order ${order.id}`);
       return;
     }
 
-    // Update order
     await this.orderRepo.updateStatus(order.id, 'PAID', {
       paidAt: new Date(verified.paidAt),
       paystackChannel: verified.channel,
     });
 
-    // Fetch order items from DB
     const fullOrder = await this.prisma.order.findUnique({
       where: { id: order.id },
       include: { orderItems: true },
@@ -66,15 +61,18 @@ export class PaymentsService {
 
     if (!fullOrder) return;
 
-    // Generate tickets
     await this.ticketsService.generateTicketsForOrder(
       order.id,
-      order.userId,
       order.eventId,
       fullOrder.orderItems.map((item) => ({
         ticketTypeId: item.ticketTypeId,
         quantity: item.quantity,
       })),
+      {
+        holderId: fullOrder.userId ?? null,
+        guestPhone: fullOrder.guestPhone ?? null,
+        guestName: fullOrder.guestName ?? null,
+      },
     );
 
     this.logger.log(`Payment processed and tickets generated for order ${order.id}`);

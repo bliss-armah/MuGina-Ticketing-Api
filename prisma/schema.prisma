@@ -91,8 +91,11 @@ model TicketType {
 
 model Order {
   id              String      @id @default(uuid())
-  userId          String      @map("user_id")
+  userId          String?     @map("user_id")
   eventId         String      @map("event_id")
+  guestName       String?     @map("guest_name")
+  guestEmail      String?     @map("guest_email")
+  guestPhone      String?     @map("guest_phone")
   totalAmount     Decimal     @db.Decimal(10, 2) @map("total_amount")
   status          OrderStatus @default(PENDING)
   paystackRef     String?     @unique @map("paystack_ref")
@@ -102,7 +105,7 @@ model Order {
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  user            User        @relation(fields: [userId], references: [id])
+  user            User?       @relation(fields: [userId], references: [id])
   event           Event       @relation(fields: [eventId], references: [id])
   orderItems      OrderItem[]
   tickets         Ticket[]
@@ -111,6 +114,7 @@ model Order {
   @@index([eventId])
   @@index([paystackRef])
   @@index([status])
+  @@index([guestPhone])
   @@map("orders")
 }
 
@@ -134,7 +138,8 @@ model Ticket {
   orderId      String       @map("order_id")
   ticketTypeId String       @map("ticket_type_id")
   eventId      String       @map("event_id")
-  holderId     String       @map("holder_id")
+  holderId     String?      @map("holder_id")
+  entryPin     String?      @map("entry_pin")
   status       TicketStatus @default(ACTIVE)
   qrPayload    String       @unique @map("qr_payload") @db.Text
   qrImageUrl   String?      @map("qr_image_url")
@@ -146,6 +151,7 @@ model Ticket {
   order        Order        @relation(fields: [orderId], references: [id])
   scanLogs     ScanLog[]
 
+  @@unique([eventId, entryPin])
   @@index([orderId])
   @@index([eventId])
   @@index([holderId])
