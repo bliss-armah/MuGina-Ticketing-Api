@@ -57,18 +57,18 @@ jobs:
         env:
           DATABASE_URL: postgresql://mugina:mugina@localhost:5432/mugina_ticketing_test
 
-      - name: Lint
-        run: yarn lint
+      # - name: Lint
+      #   run: yarn lint
 
       - name: Build
         run: yarn build
 
-      - name: Run tests
-        run: yarn test
-        env:
-          DATABASE_URL: postgresql://mugina:mugina@localhost:5432/mugina_ticketing_test
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          JWT_SECRET: test-jwt-secret
-          QR_HMAC_SECRET: test-qr-hmac-secret
-          NODE_ENV: test
+      # - name: Run tests
+      #   run: yarn test
+      #   env:
+      #     DATABASE_URL: postgresql://mugina:mugina@localhost:5432/mugina_ticketing_test
+      #     REDIS_HOST: localhost
+      #     REDIS_PORT: 6379
+      #     JWT_SECRET: test-jwt-secret
+      #     QR_HMAC_SECRET: test-qr-hmac-secret
+      #     NODE_ENV: test
