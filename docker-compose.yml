@@ -46,7 +46,7 @@ services:
 
     volumes:
       - .:/app
-      - /app/node_modules   # ✅ IMPORTANT (fixes bcrypt + prisma)
+      - /app/node_modules
 
     env_file: .env
     environment:
