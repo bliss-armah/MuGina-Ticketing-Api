@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('Events')
 @Controller('events')
@@ -31,7 +32,7 @@ export class EventsController {
   @Roles('ORGANIZER')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Organizer dashboard' })
-  getDashboard(@CurrentUser() user: any) {
+  getDashboard(@CurrentUser() user: JwtUser) {
     return this.eventsService.getDashboard(user.id);
   }
 
@@ -49,7 +50,7 @@ export class EventsController {
   @UseInterceptors(FileInterceptor('banner'))
   @ApiOperation({ summary: 'Create event (organizer only)' })
   create(
-    @CurrentUser() user: any,
+    @CurrentUser() user: JwtUser,
     @Body() dto: CreateEventDto,
     @UploadedFile() banner?: Express.Multer.File,
   ) {
@@ -64,7 +65,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Update event' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: JwtUser,
     @Body() dto: UpdateEventDto,
     @UploadedFile() banner?: Express.Multer.File,
   ) {
@@ -76,7 +77,7 @@ export class EventsController {
   @Roles('ORGANIZER')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete event' })
-  delete(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  delete(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtUser) {
     return this.eventsService.delete(id, user.id);
   }
 
@@ -87,7 +88,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Add ticket type to event' })
   addTicketType(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: JwtUser,
     @Body() dto: CreateTicketTypeDto,
   ) {
     return this.eventsService.addTicketType(id, user.id, dto);

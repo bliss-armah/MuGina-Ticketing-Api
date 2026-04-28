@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { User, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { IUserRepository } from '../../../domain/user/repositories/user.repository.interface';
 import { UserEntity, UserRole } from '../../../domain/user/entities/user.entity';
@@ -7,7 +8,7 @@ import { UserEntity, UserRole } from '../../../domain/user/entities/user.entity'
 export class UserPrismaRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toEntity(raw: any): UserEntity {
+  private toEntity(raw: User): UserEntity {
     const entity = new UserEntity();
     Object.assign(entity, {
       ...raw,
@@ -34,7 +35,7 @@ export class UserPrismaRepository implements IUserRepository {
         firstName: data.firstName!,
         lastName: data.lastName!,
         phone: data.phone,
-        role: data.role as any,
+        role: data.role as User['role'],
       },
     });
     return this.toEntity(user);
@@ -43,7 +44,7 @@ export class UserPrismaRepository implements IUserRepository {
   async update(id: string, data: Partial<UserEntity>): Promise<UserEntity> {
     const user = await this.prisma.user.update({
       where: { id },
-      data: data as any,
+      data: data as Prisma.UserUncheckedUpdateInput,
     });
     return this.toEntity(user);
   }

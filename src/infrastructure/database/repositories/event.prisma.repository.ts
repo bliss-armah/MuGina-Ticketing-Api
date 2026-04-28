@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Event, TicketType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { IEventRepository } from '../../../domain/event/repositories/event.repository.interface';
 import { EventEntity } from '../../../domain/event/entities/event.entity';
@@ -8,13 +9,13 @@ import { TicketTypeEntity } from '../../../domain/event/entities/ticket-type.ent
 export class EventPrismaRepository implements IEventRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toEventEntity(raw: any): EventEntity {
+  private toEventEntity(raw: Event & { ticketTypes?: TicketType[] }): EventEntity {
     const entity = new EventEntity();
     Object.assign(entity, raw);
     return entity;
   }
 
-  private toTicketTypeEntity(raw: any): TicketTypeEntity {
+  private toTicketTypeEntity(raw: TicketType): TicketTypeEntity {
     const entity = new TicketTypeEntity();
     Object.assign(entity, { ...raw, price: Number(raw.price) });
     return entity;
@@ -59,7 +60,7 @@ export class EventPrismaRepository implements IEventRepository {
   async update(id: string, data: Partial<EventEntity>): Promise<EventEntity> {
     const event = await this.prisma.event.update({
       where: { id },
-      data: data as any,
+      data: data as Prisma.EventUncheckedUpdateInput,
     });
     return this.toEventEntity(event);
   }

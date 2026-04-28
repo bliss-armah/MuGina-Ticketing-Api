@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { IUserRepository, USER_REPOSITORY } from '../../domain/user/repositories/user.repository.interface';
-import { UserRole } from '../../domain/user/entities/user.entity';
+import { UserEntity, UserRole } from '../../domain/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -55,11 +55,11 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.userRepo.findById(userId);
     if (!user) throw new UnauthorizedException('User not found');
-    const { passwordHash, ...safe } = user as any;
-    return safe;
+    const { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt } = user as UserEntity;
+    return { id, email, firstName, lastName, phone, role, isActive, createdAt, updatedAt };
   }
 
-  private buildTokenResponse(user: any) {
+  private buildTokenResponse(user: UserEntity) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
     return {

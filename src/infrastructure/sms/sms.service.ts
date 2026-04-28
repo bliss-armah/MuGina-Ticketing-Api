@@ -31,8 +31,8 @@ export class SmsService {
         { auth: { username: this.clientId, password: this.clientSecret } },
       );
       this.logger.log(`SMS sent to ${phone}`);
-    } catch (err: any) {
-      this.logger.error(`SMS failed to ${phone}`, err.response?.data ?? err.message);
+    } catch (err: unknown) {
+      this.logger.error(`SMS failed to ${phone}`, err);
     }
   }
 

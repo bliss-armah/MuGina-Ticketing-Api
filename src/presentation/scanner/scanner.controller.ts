@@ -9,6 +9,7 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('Scanner')
 @Controller('scanner')
@@ -23,7 +24,7 @@ export class ScannerController {
   @ApiOperation({ summary: 'Validate a ticket QR code' })
   async validate(
     @Body() dto: ValidateTicketDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: JwtUser,
     @Req() req: Request,
   ) {
     const ip = req.ip || req.socket.remoteAddress;
@@ -35,7 +36,7 @@ export class ScannerController {
   @ApiOperation({ summary: 'Validate a ticket by 6-digit entry PIN' })
   async validatePin(
     @Body() dto: ValidatePinDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: JwtUser,
     @Req() req: Request,
   ) {
     const ip = req.ip || req.socket.remoteAddress;

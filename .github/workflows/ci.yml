@@ -58,8 +58,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://mugina:mugina@localhost:5432/mugina_ticketing_test
 
-      # - name: Lint
-      #   run: yarn lint
+      - name: Lint
+        run: yarn lint
 
       - name: Build
         run: yarn build
