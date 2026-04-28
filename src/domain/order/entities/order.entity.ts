@@ -17,7 +17,7 @@ export class OrderEntity {
   paystackRef?: string;
   paystackChannel?: string;
   paidAt?: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 

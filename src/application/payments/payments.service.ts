@@ -29,7 +29,7 @@ export class PaymentsService {
     }
   }
 
-  private async handleChargeSuccess(data: any): Promise<void> {
+  private async handleChargeSuccess(data: { reference: string }): Promise<void> {
     const reference = data.reference;
     const order = await this.orderRepo.findByPaystackRef(reference);
 

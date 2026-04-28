@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Ticket, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { ITicketRepository } from '../../../domain/ticket/repositories/ticket.repository.interface';
 import { TicketEntity, TicketStatus } from '../../../domain/ticket/entities/ticket.entity';
@@ -7,7 +8,7 @@ import { TicketEntity, TicketStatus } from '../../../domain/ticket/entities/tick
 export class TicketPrismaRepository implements ITicketRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toEntity(raw: any): TicketEntity {
+  private toEntity(raw: Ticket): TicketEntity {
     const entity = new TicketEntity();
     Object.assign(entity, { ...raw, status: raw.status as TicketStatus });
     return entity;
@@ -53,12 +54,12 @@ export class TicketPrismaRepository implements ITicketRepository {
   }
 
   async create(data: Partial<TicketEntity>): Promise<TicketEntity> {
-    const ticket = await this.prisma.ticket.create({ data: data as any });
+    const ticket = await this.prisma.ticket.create({ data: data as Prisma.TicketUncheckedCreateInput });
     return this.toEntity(ticket);
   }
 
   async createMany(data: Partial<TicketEntity>[]): Promise<void> {
-    await this.prisma.ticket.createMany({ data: data as any[] });
+    await this.prisma.ticket.createMany({ data: data as Prisma.TicketCreateManyInput[] });
   }
 
   async markAsUsed(ticketId: string, scannedAt: Date): Promise<TicketEntity> {

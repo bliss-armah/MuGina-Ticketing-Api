@@ -5,6 +5,7 @@ import { RegisterDto } from '../../application/auth/dto/register.dto';
 import { LoginDto } from '../../application/auth/dto/login.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { JwtUser } from './strategies/jwt.strategy';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -28,7 +29,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
-  async getProfile(@CurrentUser() user: any) {
+  async getProfile(@CurrentUser() user: JwtUser) {
     return this.authService.getProfile(user.id);
   }
 }

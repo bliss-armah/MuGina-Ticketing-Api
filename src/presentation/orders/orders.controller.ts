@@ -5,6 +5,7 @@ import { CreateOrderDto } from '../../application/orders/dto/create-order.dto';
 import { CreateGuestOrderDto } from '../../application/orders/dto/create-guest-order.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
+import { JwtUser } from '../auth/strategies/jwt.strategy';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -21,7 +22,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create an order and initialize payment' })
-  create(@CurrentUser() user: any, @Body() dto: CreateOrderDto) {
+  create(@CurrentUser() user: JwtUser, @Body() dto: CreateOrderDto) {
     return this.ordersService.createOrder(user.id, dto);
   }
 
@@ -29,7 +30,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my orders' })
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: JwtUser) {
     return this.ordersService.findByUser(user.id);
   }
 
@@ -37,7 +38,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get order by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtUser) {
     return this.ordersService.findById(id, user.id);
   }
 }

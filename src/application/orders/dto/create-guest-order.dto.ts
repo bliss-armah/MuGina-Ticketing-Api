@@ -1,4 +1,4 @@
-import { IsString, IsArray, ValidateNested, IsNumber, Min, IsEmail, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsArray, ValidateNested, IsEmail, MinLength, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderItemDto } from './create-order.dto';

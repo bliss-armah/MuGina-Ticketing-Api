@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Order, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { IOrderRepository } from '../../../domain/order/repositories/order.repository.interface';
 import { OrderEntity, OrderStatus } from '../../../domain/order/entities/order.entity';
@@ -7,7 +8,7 @@ import { OrderEntity, OrderStatus } from '../../../domain/order/entities/order.e
 export class OrderPrismaRepository implements IOrderRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private toEntity(raw: any): OrderEntity {
+  private toEntity(raw: Order): OrderEntity {
     const entity = new OrderEntity();
     Object.assign(entity, {
       ...raw,
@@ -81,7 +82,7 @@ export class OrderPrismaRepository implements IOrderRepository {
   async updateStatus(id: string, status: string, extra?: Partial<OrderEntity>): Promise<OrderEntity> {
     const order = await this.prisma.order.update({
       where: { id },
-      data: { status: status as any, ...extra },
+      data: { status: status as Order['status'], ...extra } as Prisma.OrderUncheckedUpdateInput,
     });
     return this.toEntity(order);
   }

@@ -18,7 +18,7 @@ export interface PaystackVerifyResponse {
   currency: string;
   channel: string;
   paidAt: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 @Injectable()
@@ -42,7 +42,7 @@ export class PaystackService {
     amount: number; // in kobo (pesewas * 100)
     reference: string;
     callbackUrl?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }): Promise<PaystackInitializeResponse> {
     try {
       const response = await axios.post(
@@ -64,8 +64,8 @@ export class PaystackService {
         accessCode: data.access_code,
         reference: data.reference,
       };
-    } catch (error: any) {
-      this.logger.error('Paystack initialize failed', error.response?.data);
+    } catch (error: unknown) {
+      this.logger.error('Paystack initialize failed', (error as { response?: { data?: unknown } }).response?.data);
       throw new BadRequestException('Payment initialization failed');
     }
   }
@@ -87,8 +87,8 @@ export class PaystackService {
         paidAt: data.paid_at,
         metadata: data.metadata || {},
       };
-    } catch (error: any) {
-      this.logger.error('Paystack verify failed', error.response?.data);
+    } catch (error: unknown) {
+      this.logger.error('Paystack verify failed', (error as { response?: { data?: unknown } }).response?.data);
       throw new BadRequestException('Payment verification failed');
     }
   }
